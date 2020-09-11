@@ -4,7 +4,7 @@
 /*
  * This program implements a queue supporting both FIFO and LIFO
  * operations.
- *
+ * Test_modified
  * It uses a singly-linked list to represent the set of queue elements
  */
 
