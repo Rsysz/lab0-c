@@ -97,6 +97,8 @@ bool q_insert_tail(queue_t *q, char *s)
     newt->next = NULL;
     if (q->tail)
         q->tail->next = newt;
+    else
+        q->head = newt;
     q->tail = newt;
     q->size++;
     return true;
@@ -118,12 +120,8 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
         return false;
     list_ele_t *tmp = q->head;
     q->head = q->head->next;
-    if (sp) {
-        size_t tmp_size =
-            bufsize > strlen(tmp->value) ? strlen(tmp->value) : bufsize - 1;
-        memset(sp, '\0', tmp_size + 1);
-        strncpy(sp, tmp->value, tmp_size);
-    }
+    if (sp)
+        snprintf(sp, bufsize, "%s", tmp->value);
     free(tmp->value);
     free(tmp);
     q->size--;
@@ -152,9 +150,12 @@ void q_reverse(queue_t *q)
 {
     /* TODO: You need to write the code for this function */
     /* TODO: Remove the above comment when you are about to implement. */
-    if (!q_size(q))
+    if (!q ||
+        q->head ==
+            q->tail)  //(!q || !q->head || !q->head->next) will be better ?
         return;
     list_ele_t *cursor = NULL;
+    q->tail = q->head;
     while (q->head) {
         list_ele_t *next = q->head->next;
         q->head->next = cursor;
@@ -173,41 +174,51 @@ void q_sort(queue_t *q)
 {
     /* TODO: You need to write the code for this function */
     /* TODO: Remove the above comment when you are about to implement. */
-    if (!q_size(q) || q->head == q->tail)  // empty 0 1
+    if (!q || q->head == q->tail)  // empty 0 1
         return;
-    merge_sort(&q->head);
+    q->head = q->tail = merge_sort(q->head);
     while (q->tail->next)
         q->tail = q->tail->next;
 }
 
-void merge_sort(list_ele_t **head)
+list_ele_t *merge_sort(list_ele_t *head)
 {
-    if (!(*head) || !((*head)->next))
-        return;
-    list_ele_t *l_h = *head;
-    list_ele_t *l_t = (*head)->next;
+    if (!head || !head->next)
+        return head;
+    list_ele_t *l_head = head;
+    list_ele_t *l_tail = head->next;
     /*split*/
-    while (l_t && l_t->next) {
-        l_h = l_h->next;
-        l_t = l_t->next->next;
+    while (l_tail && l_tail->next) {
+        l_head = l_head->next;
+        l_tail = l_tail->next->next;
     }
-    l_t = l_h->next;
-    l_h->next = NULL;
-    l_h = *head;
-    merge_sort(&l_h);
-    merge_sort(&l_t);
+    l_tail = l_head->next;
+    l_head->next = NULL;
+    l_head = head;
+    /*sorting*/
+    list_ele_t *l_h = merge_sort(l_head);
+    list_ele_t *l_t = merge_sort(l_tail);
 
-    list_ele_t **new_head = head;
+    return merge(l_h, l_t);
+}
+
+list_ele_t *merge(list_ele_t *l_h, list_ele_t *l_t)
+{
+    list_ele_t *head = NULL;
+    list_ele_t **cur = &head;
     while (l_h && l_t) {
-        if (strcmp(l_h->value, l_t->value)) {
-            *new_head = l_t;
+        if (strcmp(l_h->value, l_t->value) > 0) {
+            *cur = l_t;
             l_t = l_t->next;
         } else {
-            *new_head = l_h;
+            *cur = l_h;
             l_h = l_h->next;
         }
-        new_head = &((*new_head)->next);
+        cur = &((*cur)->next);
     }
-    *new_head = l_t ? l_t : l_h;
-    // new_head = &((*new_head)->next);
+    if (l_h)
+        *cur = l_h;
+    if (l_t)
+        *cur = l_t;
+    return head;
 }
