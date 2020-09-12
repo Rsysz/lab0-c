@@ -88,17 +88,18 @@ bool q_insert_tail(queue_t *q, char *s)
     list_ele_t *newt = malloc(sizeof(list_ele_t));
     if (!newt)
         return false;
-    newt->next = NULL;
     newt->value = malloc(sizeof(char) * (strlen(s) + 1));
     if (!newt->value) {
         free(newt);
         return false;
     }
     strncpy(newt->value, s, strlen(s) + 1);
-    q->tail->next = newt;
+    newt->next = NULL;
+    if (q->tail)
+        q->tail->next = newt;
     q->tail = newt;
     q->size++;
-    return false;
+    return true;
 }
 
 /*
@@ -117,7 +118,7 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
         return false;
     list_ele_t *tmp = q->head;
     q->head = q->head->next;
-    if (!sp) {
+    if (sp) {
         size_t tmp_size =
             bufsize > strlen(tmp->value) ? strlen(tmp->value) : bufsize - 1;
         memset(sp, '\0', tmp_size + 1);
@@ -137,9 +138,7 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
  */
 int q_size(queue_t *q)
 {
-    if (!q || q->size == 0)
-        return 0;
-    return q->size;
+    return q ? q->size : 0;
 }
 
 /*
@@ -153,6 +152,16 @@ void q_reverse(queue_t *q)
 {
     /* TODO: You need to write the code for this function */
     /* TODO: Remove the above comment when you are about to implement. */
+    if (!q_size(q))
+        return;
+    list_ele_t *cursor = NULL;
+    while (q->head) {
+        list_ele_t *next = q->head->next;
+        q->head->next = cursor;
+        cursor = q->head;
+        q->head = next;
+    }
+    q->head = cursor;
 }
 
 /*
@@ -164,4 +173,41 @@ void q_sort(queue_t *q)
 {
     /* TODO: You need to write the code for this function */
     /* TODO: Remove the above comment when you are about to implement. */
+    if (!q_size(q) || q->head == q->tail)  // empty 0 1
+        return;
+    merge_sort(&q->head);
+    while (q->tail->next)
+        q->tail = q->tail->next;
+}
+
+void merge_sort(list_ele_t **head)
+{
+    if (!(*head) || !((*head)->next))
+        return;
+    list_ele_t *l_h = *head;
+    list_ele_t *l_t = (*head)->next;
+    /*split*/
+    while (l_t && l_t->next) {
+        l_h = l_h->next;
+        l_t = l_t->next->next;
+    }
+    l_t = l_h->next;
+    l_h->next = NULL;
+    l_h = *head;
+    merge_sort(&l_h);
+    merge_sort(&l_t);
+
+    list_ele_t **new_head = head;
+    while (l_h && l_t) {
+        if (strcmp(l_h->value, l_t->value)) {
+            *new_head = l_t;
+            l_t = l_t->next;
+        } else {
+            *new_head = l_h;
+            l_h = l_h->next;
+        }
+        new_head = &((*new_head)->next);
+    }
+    *new_head = l_t ? l_t : l_h;
+    // new_head = &((*new_head)->next);
 }
