@@ -132,7 +132,7 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
  */
 int q_size(queue_t *q)
 {
-    if (!q || !q->head)
+    if (!q)
         return 0;
     return q->size;
 }
@@ -208,9 +208,6 @@ list_ele_t *merge(list_ele_t *l_h, list_ele_t *l_t)
         }
         cur = &((*cur)->next);
     }
-    if (l_h)
-        *cur = l_h;
-    if (l_t)
-        *cur = l_t;
+    *cur = l_t ? l_t : l_h;
     return head;
 }
