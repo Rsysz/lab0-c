@@ -6,19 +6,16 @@ option fail 0
 option malloc 0
 new
 ih RAND 10000
-sort
-reverse
-sort
+sort d
+sort a
 free
 new
 ih RAND 50000
-sort
-reverse
-sort
+sort d
+sort a
 free
 new
 ih RAND 100000
-sort
-reverse
-sort
+sort d
+sort a
 free

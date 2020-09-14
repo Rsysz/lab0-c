@@ -6,6 +6,6 @@ ih dolphin 1000000
 it gerbil 1000000
 size 1000
 reverse
-sort
+sort a
 size 1000
 

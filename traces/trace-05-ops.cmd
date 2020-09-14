@@ -14,7 +14,7 @@ size
 rh dolphin
 reverse
 size
-sort
+sort a
 rh bear
 rh bear
 rh gerbil

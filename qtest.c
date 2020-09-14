@@ -94,7 +94,7 @@ static void console_init()
         "rhq", do_remove_head_quiet,
         "                | Remove from head of queue without reporting value.");
     add_cmd("reverse", do_reverse, "                | Reverse queue");
-    add_cmd("sort", do_sort, "                | Sort queue in ascending order");
+    add_cmd("sort", do_sort, " usage:[a/d]    | Sort queue in ascending order");
     add_cmd("size", do_size,
             " [n]            | Compute queue size n times (default: n == 1)");
     add_cmd("show", do_show, "                | Show queue contents");
@@ -162,12 +162,15 @@ static bool do_free(int argc, char *argv[])
     return ok && !error_check();
 }
 /*
- * TODO: Add a buf_size check of if the buf_size may be less
+ * DONE: Add a buf_size check of if the buf_size may be less
  * than MIN_RANDSTR_LEN.
  */
 static void fill_rand_string(char *buf, size_t buf_size)
 {
     size_t len = 0;
+    if (buf_size < MIN_RANDSTR_LEN)  // not gonna happen cuz buf_size is set to
+                                     // MAX_RADNSTR_LEN
+        buf_size = MAX_RANDSTR_LEN;
     while (len < MIN_RANDSTR_LEN)
         len = rand() % buf_size;
 
@@ -533,8 +536,8 @@ static bool do_size(int argc, char *argv[])
 
 bool do_sort(int argc, char *argv[])
 {
-    if (argc != 1) {
-        report(1, "%s takes no arguments", argv[0]);
+    if (argc != 2) {
+        report(1, "%s usage:[a/d]", argv[0]);
         return false;
     }
 
@@ -553,15 +556,26 @@ bool do_sort(int argc, char *argv[])
     exception_cancel();
     set_noallocate_mode(false);
 
+    if (!strcasecmp(argv[1], "d"))
+        q_reverse(q);
+
     bool ok = true;
     if (q) {
         for (list_ele_t *e = q->head; e && --cnt; e = e->next) {
             /* Ensure each element in ascending order */
-            /* FIXME: add an option to specify sorting order */
-            if (strcasecmp(e->value, e->next->value) > 0) {
-                report(1, "ERROR: Not sorted in ascending order");
-                ok = false;
-                break;
+            /* DONE: add an option to specify sorting order */
+            if (!strcasecmp(argv[1], "a")) {
+                if (strcasecmp(e->value, e->next->value) > 0) {
+                    report(1, "ERROR: Not sorted in ascending order");
+                    ok = false;
+                    break;
+                }
+            } else {
+                if (strcasecmp(e->value, e->next->value) < 0) {
+                    report(1, "ERROR: Not sorted in descending order");
+                    ok = false;
+                    break;
+                }
             }
         }
     }

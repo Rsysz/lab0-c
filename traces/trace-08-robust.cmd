@@ -5,4 +5,4 @@ new
 rh
 reverse
 size
-sort
+sort a
